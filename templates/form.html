@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ business }} - Get a quote</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #f4f1ec;
+      color: #222;
+    }
+    main {
+      max-width: 520px;
+      margin: 48px auto;
+      padding: 32px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
+    }
+    h1 { margin: 0 0 4px; font-size: 26px; }
+    .sub { margin: 0 0 24px; color: #666; }
+    label { display: block; margin: 16px 0 6px; font-weight: 600; font-size: 14px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font: inherit;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { outline: 2px solid #b5651d; border-color: transparent; }
+    .err { color: #b00020; font-size: 13px; margin-top: 4px; min-height: 1em; }
+    .hp { position: absolute; left: -9999px; }
+    button {
+      margin-top: 24px;
+      width: 100%;
+      padding: 12px;
+      border: 0;
+      border-radius: 6px;
+      background: #b5651d;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: default; }
+    .done { text-align: center; padding: 40px 0; }
+    @media (max-width: 560px) { main { margin: 0; border-radius: 0; padding: 24px 16px; } }
+  </style>
+</head>
+<body>
+<main>
+  <div id="form-wrap">
+    <h1>{{ business }}</h1>
+    <p class="sub">Tell us about your project and we'll get back to you within a day.</p>
+
+    <form id="lead-form" novalidate>
+      <label for="name">Name</label>
+      <input id="name" name="name" autocomplete="name" required>
+      <div class="err" data-for="name"></div>
+
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" required>
+      <div class="err" data-for="email"></div>
+
+      <label for="phone">Phone / WhatsApp <span style="font-weight:400;color:#888">(optional)</span></label>
+      <input id="phone" name="phone" type="tel" autocomplete="tel">
+      <div class="err" data-for="phone"></div>
+
+      <label for="service">What do you need?</label>
+      <select id="service" name="service">
+        <option>Full home interior</option>
+        <option>Modular kitchen</option>
+        <option>Single room makeover</option>
+        <option>Office / commercial</option>
+        <option>Not sure yet</option>
+      </select>
+
+      <label for="message">Details</label>
+      <textarea id="message" name="message" placeholder="Size of the space, budget, timeline..."></textarea>
+      <div class="err" data-for="message"></div>
+
+      <div class="hp" aria-hidden="true">
+        <label for="website">Website</label>
+        <input id="website" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <button type="submit">Send enquiry</button>
+    </form>
+  </div>
+
+  <div id="thanks" class="done" hidden>
+    <h1>Thanks!</h1>
+    <p class="sub">We've got your message and will be in touch soon.</p>
+  </div>
+</main>
+
+<script>
+  const form = document.getElementById("lead-form");
+  const button = form.querySelector("button");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    form.querySelectorAll(".err").forEach(el => el.textContent = "");
+    button.disabled = true;
+    button.textContent = "Sending...";
+
+    try {
+      const res = await fetch("/submit", { method: "POST", body: new FormData(form) });
+      const data = await res.json();
+      if (data.ok) {
+        document.getElementById("form-wrap").hidden = true;
+        document.getElementById("thanks").hidden = false;
+        return;
+      }
+      for (const [field, msg] of Object.entries(data.errors || {})) {
+        const el = form.querySelector(`.err[data-for="${field}"]`);
+        if (el) el.textContent = msg;
+      }
+    } catch (err) {
+      alert("Something went wrong, please try again.");
+    }
+    button.disabled = false;
+    button.textContent = "Send enquiry";
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: lead-form-alerts
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: BUSINESS_NAME
+        value: Acme Interiors
+      - key: WEBHOOK_SECRET
+        generateValue: true
+      - key: GOOGLE_SHEET_ID
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: NOTIFY_EMAIL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
